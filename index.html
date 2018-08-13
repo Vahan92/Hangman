@@ -14,13 +14,18 @@
 <body onload="readFile()">
     <div id="output" class="container">
         <p id="ammountOfLetters"></p>
+        <p id="letters"></p>
+        <p id="message"></p>
+        <p id="error"></p>
         <p id="ammountOfChars"></p>
-        <button onclick="selectWord()">start the game</button>
+        <p id="guess"></p>
+        <p id="warning"></p>
+        <button onclick="selectWord()">start new game</button>
         <br/>
         <br/>
         <div>
             <input type="text" id="txt" class="field" />
-            <button class="submit" onclick="getInpVal()">submit</button>
+            <button class="submit" onclick="checking()">submit</button>
         </div>
     </div>
     <script src="js/main.js"></script>

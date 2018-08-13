@@ -93,12 +93,25 @@
 //     simpleApp = MyApp(); //Invoke the object (function assigned to the object) and assign to simpleApp
 //     simpleApp.init(divId);
 
-let randomWord, arr = [], chars = '',
-getId = document.getElementById,
-print = document.getElementById("ammountOfLetters");
-printChar = document.getElementById("ammountOfChars");
+getId = function (params) {
+    return document.getElementById(params);
+};
 
-readFile = function() {
+Array.prototype.indicesOf = function (x) {
+    return this.reduce((p, c, i) => c === x ? p.concat(i) : p, []);
+};
+
+let randomWord, arrWord, arr = [], changedArr = [], anotherArr = [], checkingArr = [], mia = [], some = [], elen = [], chars = '', count = 6, warning = 3, winning = 0, wordLength = 0, alphaArray = "abcdefghijklmnopqrstuvwxyz".split(""), userVal = getId("txt"),
+
+print = getId("ammountOfLetters");
+wordsLeft = getId("guess");
+printChar = getId("ammountOfChars");
+printletters = getId("letters");
+printWarning = getId("warning");
+printMessage = getId("message");
+printErr = getId("error");
+
+readFile = function () {
     $.get('words.txt', function (data) {
         arr = data.split('\n');
         console.log(arr);
@@ -106,26 +119,118 @@ readFile = function() {
 }
 
 selectWord = () => {
-    let arrWord = arr.join(" ").split(" ");
+    arrWord = arr.join(" ").split(" ");
+    console.log(arrWord);
     chars = '';
-    randomWord = arrWord[Math.floor(Math.random() * arrWord.length-1)].split('');
-    print.textContent = `I am thinking of a word that is ${randomWord.length} letters long.`;
-    for (let i = 0; i < randomWord.length; i++) {
-         chars += "*";
+    randomWord = arrWord[Math.floor(Math.random() * arrWord.length - 1)].split('');
+    wordLength = randomWord.length;
+    print.textContent = `I am thinking of a word that is ${wordLength} letters long.`;
+    wordsLeft.textContent = `You have 6 guesses left`;
+    printletters.textContent = `Here are the letters left: ${alphaArray}`;
+    printWarning.textContent = ``;
+    hint();
+    for (let i = 0; i < wordLength; i++) {
+        chars += "*";
     }
     printChar.textContent = chars;
     console.log(randomWord);
 }
 
-getInpVal = () => {
-    let userVal = document.getElementById("txt");
-    for (let i = 0; i < randomWord.length; i++) {
-        if (userVal.value === randomWord[i]) {
-            let num = randomWord.indexOf(i);
-            chars = chars.substr(0, num) + userVal.value + chars.substr(num + 1);
-        } else {
-            //alert("no")
-        }     
+hint = () => {
+    let j,ok;
+    for (let i = 0; i < arrWord.length; i++) {
+        changedArr.push(arrWord[i].split(''));
     }
+    for (let i = 0; i < changedArr.length; i++) {
+        if (randomWord.length === changedArr[i].length)
+            anotherArr.push(changedArr[i]);
+    }
+    for (let i = 0; i < anotherArr.length; i++) {
+        for (j = 0; j < anotherArr[0].length; j++) {
+            ok = false;
+            if (anotherArr[i][j] === "*") {
+                continue;
+            } else if (anotherArr[i][j] !== "*") {
+                if (anotherArr[i][j] !== checkingArr[j]) {
+                    break;
+                 }
+                 if (anotherArr[i][j] === checkingArr[j])
+                 {
+                      ok = true;
+                 }
+            }
+        }
+        if(j === anotherArr[0].length-1 && ok === true)
+        {
+            elen.push(anotherArr[j]);
+        }
+
+    }
+    console.log(changedArr);
+    console.log("anotherArr ", anotherArr);
+    console.log("elen ", elen);
+}
+
+checking = () => {
+    let letters = /^[A-Za-z]+$/;
+    if (!userVal.value.match(letters)) {
+        warning -= 1;
+        printWarning.textContent = `Oops! That is not a valid letter. You have ${warning} warnings left.`;
+        gameOver();
+    } else if (alphaArray.includes(userVal.value.toLowerCase())) {
+        getInpVal();
+        console.log("alphaArray ", alphaArray, "userVal.value.toLowerCase()", userVal.value.toLowerCase());
+        gameOver();
+    } else {
+        warning -= 1;
+        printWarning.textContent = `Oops! You've already guessed that letter. You have ${warning} warnings left.`;
+        gameOver();
+    }
+}
+
+getInpVal = () => {
+    let sum = 0, been = false;
+    for (let i = 0; i < wordLength; i++) {
+        if (userVal.value === randomWord[i]) {
+            chars = chars.substr(0, i) + userVal.value.toLowerCase() + chars.substr(i + 1);
+            printChar.textContent = chars;
+            printMessage.textContent = `Good guess`;
+            been = true;
+            sum = 0;
+            winning += 1;
+            console.log(alphaArray);
+        } else {
+            sum = 1;
+        }
+    }
+    if (been == false) {
+        count -= sum;
+        printMessage.textContent = `Oops! That letter is not in my word.`;
+    }
+    if (winning === wordLength) {
+        alert("Congratulations, you won");
+        location.reload();
+    }
+    alphaArray.splice(alphaArray.indexOf(userVal.value.toLowerCase()), 1);
+    printletters.textContent = `Here are the letters left: ${alphaArray}`;
+    been = false;
     userVal.value = '';
+    wordsLeft.textContent = `You have ${count} guesses left`;
+    printChar.textContent = chars;
+    console.log(`chars `,chars);
+    checkingArr.length = 0;
+    checkingArr.push(chars.split(""));
+    console.log("checkingArr ", checkingArr);
+    hint();
+    let jj = Array.from(checkingArr);
+    console.log("jj ", jj);
+    some = jj.indicesOf("*");    
+    console.log("some ", some);
+}
+
+gameOver = () => {
+    if (count < 0 || warning < 0) {
+        alert("Game over, you lost");
+        location.reload();
+    }
 }
