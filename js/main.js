@@ -1,30 +1,33 @@
-getId = function (params) {
+getId =  (params) => {
     return document.getElementById(params);
 };
 
-Array.prototype.indicesOf = function (x) {
-    return this.reduce((p, c, i) => c === x ? p.concat(i) : p, []);
-};
+let guessRandomWord, arrOfWords, arr = [], hintArr = [], wordCheckingArr = [], chars = '', count = 6, points, warning = 3, winning = 0, guessWordLength = 0, alphabetArray = "abcdefghijklmnopqrstuvwxyz".split(""), userVal = getId("txt"),
 
-let guessRandomWord, arrOfWords, checkIndexes, arr = [], nestedArrOfWords = [], arrOfSameLength = [], hintArr = [], wordCheckingArr = [], mia = [], some = [], arrForResults = [], chars = '', count = 6, points, warning = 3, winning = 0, guessWordLength = 0, alphabetArray = "abcdefghijklmnopqrstuvwxyz".split(""), userVal = getId("txt"),
-
-print = getId("ammountOfLetters");
-charsLeft = getId("guess");
-printChar = getId("ammountOfChars");
-printletters = getId("letters");
-printWarning = getId("warning");
-printMessage = getId("message");
-printErr = getId("error");
+print = getId("ammountOfLetters"),
+charsLeft = getId("guess"),
+printChar = getId("ammountOfChars"),
+printletters = getId("letters"),
+printWarning = getId("warning"),
+printMessage = getId("message"),
+printErr = getId("error"),
 printHints = getId("hints");
 
+/**
+ * Gets words from the txt file
+ */
 readFile = function () {
     $.get('words.txt', function (data) {
         arr = data.split('\n');
-        //console.log(arr);
+        console.log(arr)
     });
 }
 
+/**
+ * Chooses random word for guessing and prints the *
+ */
 selectWord = () => {
+    //document.getElementsByClassName("myButtons").disabled = false;
     arrOfWords = arr.join(" ").split(" ");
     console.log("arrOfWords ", arrOfWords);
     chars = '';
@@ -35,7 +38,6 @@ selectWord = () => {
     charsLeft.textContent = `You have 6 guesses left`;
     printletters.textContent = `Here are the letters left: ${alphabetArray}`;
     printWarning.textContent = ``;
-    //hint();
     for (let i = 0; i < guessWordLength; i++) {
         chars += "*";
     }
@@ -43,6 +45,9 @@ selectWord = () => {
     console.log(guessRandomWord);
 }
 
+/**
+ * Checks input value
+ */
 checkingInputValue = () => {
     let letters = /^[A-Za-z]+$/;
     if (!userVal.value.match(letters)) {
@@ -51,7 +56,6 @@ checkingInputValue = () => {
         gameOver();
     } else if (alphabetArray.includes(userVal.value.toLowerCase())) {
         getInpVal();
-        console.log("alphabetArray ", alphabetArray, "userVal.value.toLowerCase()", userVal.value.toLowerCase());
         gameOver();
     } else {
         warning -= 1;
@@ -60,6 +64,9 @@ checkingInputValue = () => {
     }
 }
 
+/**
+ * Checks if the user typed charackter is in the word and prints it
+ */
 getInpVal = () => {
     let sum = 0, been = false;
     for (let i = 0; i < guessWordLength; i++) {
@@ -79,10 +86,6 @@ getInpVal = () => {
         count -= sum;
         printMessage.textContent = `Oops! That letter is not in my word.`;
     }
-    if (winning === guessWordLength) {
-        alert(`Congratulations, you won. Your score is ${count * points}`);
-        location.reload();
-    }
     alphabetArray.splice(alphabetArray.indexOf(userVal.value.toLowerCase()), 1);
     printletters.textContent = `Here are the letters left: ${alphabetArray}`;
     been = false;
@@ -92,19 +95,18 @@ getInpVal = () => {
     console.log(`chars `, chars);
     wordCheckingArr.length = 0;
     wordCheckingArr = chars.split("");
-    console.log("wordCheckingArr ", wordCheckingArr);
-    //console.log("jj ", jj);
-    some = wordCheckingArr.indicesOf("*");
-   // getIndexesOfGuessedCharacters();
-    console.log("some ", some);
+    console.log("wordCheckingArr ", wordCheckingArr);   
 }
 
+/**
+ * Prints all the words which are the same length with the guessing word and has the same letters on the same position
+ */
 hint = () => {
-    nestedArrOfWords = [];
+    let nestedArrOfWords = [],
     arrOfSameLength = [];
     hintArr = [];
-    let j, ok, myNum = 0;
-    for (let i = 0; i < arrOfWords.length; i++) {
+    let j, myNum = 0;
+    for (let i = 0, arrLen = arrOfWords.length; i < arrLen; i++) { // amen tex poxel
         nestedArrOfWords.push(arrOfWords[i].split(''));
     }
     for (let i = 0; i < nestedArrOfWords.length; i++) {
@@ -112,27 +114,32 @@ hint = () => {
             arrOfSameLength.push(nestedArrOfWords[i]);
     }
     for (let i = 0; i < arrOfSameLength.length; i++) {
-        myNum=0;
+        myNum = 0;
         for (j = 0; j < wordCheckingArr.length; j++) {
-            if(wordCheckingArr[j] !== "*" && wordCheckingArr[j] === arrOfSameLength[i][j]){
+            if (wordCheckingArr[j] !== "*" && wordCheckingArr[j] === arrOfSameLength[i][j]) {
                 myNum++;
-                console.log('myNum ', myNum, "winning ", winning)                
             }           
         }
-        if(myNum === winning){
-            hintArr.push(arrOfSameLength[i].join().replace(/,/g, ''));
+        if (myNum === winning) {
+            hintArr.push(arrOfSameLength[i].join(''));
         }
     }
     printHints.textContent = `POSSIBLE WORDS ARE: ${hintArr.join(' ')}`;
     console.log(`nestedArrOfWords`, nestedArrOfWords);
     console.log("arrOfSameLength ", arrOfSameLength);
-    console.log("arrForResults ", hintArr);
+    console.log("hintArr ", hintArr);
 }
 
+/**
+ * Checks if player lost or won the game
+ */
 gameOver = () => {
-    if (count < 0 || warning < 0) {
-        alert(`Game over, you lost, the word is - ${guessRandomWord.join().replace(/,/g, '')}`);
+    if (count <= 0 || warning < 0) {
+        alert(`Game over, you lost, the word is - ${guessRandomWord.join('')}`);
+        location.reload();
+    }
+    if (winning === guessWordLength) {
+        alert(`Congratulations, you won. Your score is ${count * points}`);
         location.reload();
     }
 }
-
