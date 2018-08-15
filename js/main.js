@@ -15,6 +15,7 @@ printletters = getId("letters");
 printWarning = getId("warning");
 printMessage = getId("message");
 printErr = getId("error");
+printHints = getId("hints");
 
 readFile = function () {
     $.get('words.txt', function (data) {
@@ -94,7 +95,7 @@ getInpVal = () => {
     console.log("wordCheckingArr ", wordCheckingArr);
     //console.log("jj ", jj);
     some = wordCheckingArr.indicesOf("*");
-    getIndexesOfGuessedCharacters();
+   // getIndexesOfGuessedCharacters();
     console.log("some ", some);
 }
 
@@ -102,7 +103,7 @@ hint = () => {
     nestedArrOfWords = [];
     arrOfSameLength = [];
     hintArr = [];
-    let j, ok;
+    let j, ok, myNum = 0;
     for (let i = 0; i < arrOfWords.length; i++) {
         nestedArrOfWords.push(arrOfWords[i].split(''));
     }
@@ -111,29 +112,21 @@ hint = () => {
             arrOfSameLength.push(nestedArrOfWords[i]);
     }
     for (let i = 0; i < arrOfSameLength.length; i++) {
+        myNum=0;
         for (j = 0; j < wordCheckingArr.length; j++) {
-            ok= false;
-           if (wordCheckingArr[j] === "*") {
-               ok = true;
-               continue;
-           } else if (wordCheckingArr[j] !== "*" && wordCheckingArr[j] !== arrOfSameLength[i][j]) {
-               ok=false;
-               break;
-           } else {
-               ok = true;
-           }
-                   
+            if(wordCheckingArr[j] !== "*" && wordCheckingArr[j] === arrOfSameLength[i][j]){
+                myNum++;
+                console.log('myNum ', myNum, "winning ", winning)                
+            }           
         }
-        if (j === arrOfSameLength[0].length - 1 && ok === true) {
-            arrForResults.push(arrOfSameLength[j]);
-            console.log("from if ", arrForResults);
+        if(myNum === winning){
+            hintArr.push(arrOfSameLength[i].join().replace(/,/g, ''));
         }
-                
     }
-         
+    printHints.textContent = `POSSIBLE WORDS ARE: ${hintArr.join(' ')}`;
     console.log(`nestedArrOfWords`, nestedArrOfWords);
     console.log("arrOfSameLength ", arrOfSameLength);
-    console.log("arrForResults ", arrForResults);
+    console.log("arrForResults ", hintArr);
 }
 
 gameOver = () => {
@@ -142,3 +135,4 @@ gameOver = () => {
         location.reload();
     }
 }
+
